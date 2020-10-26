@@ -8,19 +8,22 @@ daq_setup_environment()
 find_package(cetlib REQUIRED)
 find_package(ers REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(TBB REQUIRED)
 
-set(CMDLIB_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ers::ers nlohmann_json::nlohmann_json)
+set(CMDLIB_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ers::ers nlohmann_json::nlohmann_json ${TBB_IMPORTED_TARGETS})
 
 ##############################################################################
 # Main library
 
-daq_add_library(CommandFacility.cpp LINK_LIBRARIES ${CMDLIB_DEPENDENCIES})
+daq_add_library(CommandFacility.cpp Utils.cpp LINK_LIBRARIES ${CMDLIB_DEPENDENCIES})
 
 ##############################################################################
 # Plugins
 
 daq_add_plugin(StdinCommandFacility duneCommandFacility LINK_LIBRARIES cmdlib)
-daq_add_plugin(FileCommandFacility  duneCommandFacility LINK_LIBRARIES cmdlib)
+
+# N.B. the fCF plugin starts with a lower case on purpose.  Do not "fix" it.
+daq_add_plugin(fileCommandFacility  duneCommandFacility LINK_LIBRARIES cmdlib)
 
 ##############################################################################
 # Integration tests
@@ -30,8 +33,11 @@ daq_add_plugin(dummy_command_facility duneCommandFacility TEST LINK_LIBRARIES cm
 daq_add_application(cmdlib_test_dummy_app test_dummy_app.cxx TEST LINK_LIBRARIES cmdlib)
 daq_add_application(cmdlib_test_stdin_app test_stdin_app.cxx TEST LINK_LIBRARIES cmdlib)
 
+daq_add_application(test_url_parse test_url_parse.cxx TEST LINK_LIBRARIES cmdlib )
+
 ##############################################################################
-# No unit tests written
+# Unit tests:
+
 
 ##############################################################################
 

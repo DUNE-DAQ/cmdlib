@@ -96,7 +96,7 @@ private:
 std::shared_ptr<CommandFacility>
 makeCommandFacility(std::string const& uri)
 {
-    auto sep = uri.find("://");
+    auto sep = uri.find_first_of(":");
     std::string scheme;
     if (sep == std::string::npos) { // simple path
         scheme = "file";
