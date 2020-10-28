@@ -27,6 +27,7 @@ daq_add_library(CommandFacility.cpp LINK_LIBRARIES ${CMDLIB_DEPENDENCIES})
 
 daq_add_plugin(stdinCommandFacility duneCommandFacility LINK_LIBRARIES cmdlib)
 
+
 ##############################################################################
 # Integration tests
 
