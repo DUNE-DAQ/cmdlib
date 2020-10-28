@@ -4,7 +4,9 @@
 include(CMakeFindDependencyMacro)
 
 find_dependency(cetlib)
+find_dependency(tbb)
 find_dependency(ers)
+find_dependency(nlohmann_json)
 
 if (EXISTS ${CMAKE_SOURCE_DIR}/@PROJECT_NAME@)
 
