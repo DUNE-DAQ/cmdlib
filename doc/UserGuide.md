@@ -1,6 +1,6 @@
 ## Commands
 Commands are JSON objects. They have a signature of having an `id` string element, and a `data` object which is a user defined custom parameter list. For an example, please have a look on the `-job.json` files in appfwk. For better names, these field might be renamed in the future. This is how the init command looks like in order to create a fake data producer and a consumer modules, connected by a queue:
-```
+```json
 {
         "id": "init",
         "data": {
@@ -45,7 +45,7 @@ Commands are JSON objects. They have a signature of having an `id` string elemen
 
 ## CommandedObject
 Commanded objects are meant to implement the `CommandedObject` interface from this library. They need to implement a single function, which is `execute`, and it's responsible to process the command objects. One really good example to follow, is the `DAQModuleManager` from the `appfwk`. The mockup of the implementation is as follows:
-```
+```json
 void
 DAQModuleManager::execute( const dataobj_t& cmd_data ) {
 
