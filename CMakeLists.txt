@@ -12,6 +12,8 @@ find_package(nlohmann_json REQUIRED)
 
 set(CMDLIB_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ${TBB} ${TBB_IMPORTED_TARGETS} ers::ers nlohmann_json::nlohmann_json)
 
+daq_codegen_schema(*.jsonnet TEMPLATES Structs.hpp Nljs.hpp )
+
 ##############################################################################
 # Main library
 
