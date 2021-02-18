@@ -13,6 +13,7 @@
 namespace dunedaq::cmdlib {
 
 typedef nlohmann::json cmdobj_t;
+typedef nlohmann::json cmdmeta_t;
 
 /**
  * @brief Interface needed by commanded objects in the DAQ

@@ -32,7 +32,7 @@ CommandFacility::set_commanded(CommandedObject& commanded)
 {
   if (m_commanded_object == nullptr) {
     m_commanded_object = &commanded;
-    m_command_callback = std::bind(&CommandFacility::handle_command, this, std::placeholders::_1);
+    m_command_callback = std::bind(&CommandFacility::handle_command, this, std::placeholders::_1, std::placeholders::_2);
     m_active.store(true);
     m_executor = std::thread(&CommandFacility::executor, this);
   } else {
@@ -41,30 +41,29 @@ CommandFacility::set_commanded(CommandedObject& commanded)
 }
 
 void 
-CommandFacility::execute_command(const cmdobj_t& command)
+CommandFacility::execute_command(const cmdobj_t& cmd, cmdmeta_t meta)
 {
-  auto execfut = std::async(std::launch::deferred, m_command_callback, std::move(command));
+  auto execfut = std::async(std::launch::deferred, m_command_callback, std::move(cmd), std::move(meta));
   m_completion_queue.push(std::move(execfut));
 }
 
 void
-CommandFacility::handle_command(const cmdobj_t& command) 
+CommandFacility::handle_command(const cmdobj_t& cmd, cmdmeta_t meta)
 {
-  std::string ret = "";
   try {
-    m_commanded_object->execute(command);
-    ret = "OK";
+    m_commanded_object->execute(cmd);
+    meta["result"] = "OK";
   } catch (const ers::Issue& ei ) {
-    ret = ei.what();
+    meta["result"] = ei.what();
     ers::error(CommandedObjectExecutionError(ERS_HERE, "Caught ers::Issue", ei));
   } catch (const std::exception& exc) {
-    ret = exc.what();
+    meta["result"] = exc.what();
     ers::error(CommandedObjectExecutionError(ERS_HERE, "Caught std::exception", exc));
   } catch (...) {  // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
-    ret = "Caught unknown exception";
-    ers::error(CommandedObjectExecutionError(ERS_HERE, ret));
+    meta["result"] = "Caught unknown exception";
+    ers::error(CommandedObjectExecutionError(ERS_HERE, meta["result"]));
   }
-  completion_callback(ret);
+  completion_callback(cmd, meta);
 }
 
 void

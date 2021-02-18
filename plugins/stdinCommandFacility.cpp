@@ -74,7 +74,7 @@ public:
         ERS_INFO("Command " << cmdid << " is not available...");
       } else {
         ERS_INFO("Executing " << cmdid << " command...");
-        inherited::execute_command(m_available_commands[cmdid]);
+        inherited::execute_command(m_available_commands[cmdid], cmdmeta_t());
       }
     }
     ERS_INFO("Command handling stopped.");
@@ -88,8 +88,8 @@ protected:
   std::string m_available_str;
 
   // Implementation of completion_handler interface
-  void completion_callback(const std::string& result) {
-    ERS_INFO("Command execution resulted with: " << result);
+  void completion_callback(const cmdobj_t& cmd, cmdmeta_t& meta) {
+    ERS_INFO("Command " << cmd << "\nexecution resulted with: " << meta["result"]);
   }
 
 };
