@@ -8,6 +8,7 @@
  */
 #include "cmdlib/CommandFacility.hpp"
 #include "cmdlib/Issues.hpp"
+#include "cmdlib/cmd/Nljs.hpp"
 
 #include <logging/Logging.hpp>
 #include <nlohmann/json.hpp>
@@ -56,13 +57,13 @@ public:
     std::ifstream ifs;
     ifs.open(fname, std::fstream::in);
     if (!ifs.is_open()) {
-      throw dunedaq::cmdlib::BadFile(ERS_HERE, fname, "reading");
+      throw BadFile(ERS_HERE, fname, "reading");
     } 
 
     try {
       m_raw_commands = json::parse(ifs);
     } catch (const std::exception& ex) {
-      throw dunedaq::cmdlib::CannotParseCommand(ERS_HERE, ex.what());
+      throw CannotParseCommand(ERS_HERE, ex.what());
     }
     std::ostringstream avaostr;
     avaostr << "Available commands:";
@@ -106,7 +107,10 @@ protected:
 
   // Implementation of completion_handler interface
   void completion_callback(const cmdobj_t& cmd, cmdmeta_t& meta) {
-    TLOG() << "Command " << cmd["id"] << " execution resulted with: " << meta["result"];
+    cmd::Command  command = cmd.get<cmd::Command>();
+    cmd::CommandReply reply = meta.get<cmd::CommandReply>();
+
+    TLOG() << "Command " << command.id << " execution resulted with: " << reply.success << " " << reply.result;
   }
 
 };
