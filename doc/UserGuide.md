@@ -50,7 +50,6 @@ void
 DAQModuleManager::execute( const dataobj_t& cmd_data ) {
 
     auto cmd = cmd_data.get<cmd::Command>();
-    ERS_INFO("Command id:"<< cmd.id);
     ...
     dispatch_for_modules(cmd.id, cmd.data);
 }
