@@ -19,6 +19,8 @@ local cs = {
     // cmdid: s.enum("CmdId", ["unknown","init","conf","start","stop","scrap","fini"],
     //                 "unknown", doc="The known command types"),
     
+    isok: s.boolean("IsOk", doc="Outcome of the command: OK=true, NotOK=false"),
+
     command: s.record("Command", [
         s.field("id", self.cmdid,
                 doc="Identify the type of command"),
@@ -26,6 +28,11 @@ local cs = {
                 doc="Command data object with type-specific structure"),
     ], doc="Top-level command object structure"),
 
+    cmdreply: s.record("CommandReply", [
+        s.field("success", self.isok, 1, doc="Outcome of the command: OK=true, NotOK=false"),
+        s.field("data", self.data, optional=true,
+                doc="Command reply data object with type-specific structure"),
+    ], doc="Top-level command reply object structure"),
 };
 
 // Output a topologically sorted array.

@@ -9,7 +9,7 @@
 #include "cmdlib/CommandFacility.hpp"
 #include "cmdlib/Issues.hpp"
 
-#include <ers/ers.h>
+#include <logging/Logging.hpp>
 #include <nlohmann/json.hpp>
 #include <cetlib/BasicPluginFactory.h>
 
@@ -23,6 +23,14 @@
 using namespace dunedaq::cmdlib;
 using namespace std::chrono_literals;
 using json = nlohmann::json;
+
+    // Throw if a file can not be opened.  Provide "mode" of "reading"
+    // or "writing" and provide erroneous filename as args.
+    ERS_DECLARE_ISSUE(cmdlib, BadFile,
+                     "Can not open file for " << mode << ": " << filename,
+                      ((std::string)filename)
+                      ((std::string)mode))
+    
 
 class stdinCommandFacility : public CommandFacility
 {
@@ -38,16 +46,18 @@ public:
       fname = uri.substr(sep+3);
     }
 
-    ERS_INFO("Loading commands from file: " << fname);
+    TLOG_LOG() <<"Loading commands from file: " << fname;
+   
+    std::ifstream ifs;
+    ifs.open(fname, std::fstream::in);
+    if (!ifs.is_open()) {
+      throw dunedaq::cmdlib::BadFile(ERS_HERE, fname, "reading");
+    } 
+
     try {
-      std::ifstream ifs;
-      ifs.open(fname, std::fstream::in);
-      if (!ifs.is_open()) {
-        throw dunedaq::cmdlib::CommandParserError(ERS_HERE, "Can't open command file!");
-      }
       m_raw_commands = json::parse(ifs);
     } catch (const std::exception& ex) {
-      throw dunedaq::cmdlib::CommandParserError(ERS_HERE, ex.what());
+      throw dunedaq::cmdlib::CannotParseCommand(ERS_HERE, ex.what());
     }
     std::ostringstream avaostr;
     avaostr << "Available commands:";
@@ -61,23 +71,25 @@ public:
 
   // Implementation of the runner
   void run(std::atomic<bool>& end_marker) {
-    ERS_INFO("Entered commands will be launched on CommandedObject...");
+    TLOG_DEBUG(1) << "Entered commands will be launched on CommandedObject...";
     std::string cmdid;
     while (end_marker) { //until runmarker
-      ERS_INFO(m_available_str);
+      TLOG_LOG() << m_available_str;
       // feed commands from cin
       std::cin >> cmdid;
       if (std::cin.eof()) {
         break;
       }
       if ( m_available_commands.find(cmdid) == m_available_commands.end() ) {
-        ERS_INFO("Command " << cmdid << " is not available...");
+        std::ostringstream s;
+	s << "Command " << cmdid << " is not available...";
+        ers::error (CannotParseCommand(ERS_HERE, s.str());
       } else {
-        ERS_INFO("Executing " << cmdid << " command...");
+        TLOG_LOG() << "Executing " << cmdid << " command...";
         inherited::execute_command(m_available_commands[cmdid], cmdmeta_t());
       }
     }
-    ERS_INFO("Command handling stopped.");
+    TLOG_DEBUG(1) << "Command handling stopped.";
   }
 
 protected:
@@ -89,7 +101,7 @@ protected:
 
   // Implementation of completion_handler interface
   void completion_callback(const cmdobj_t& cmd, cmdmeta_t& meta) {
-    ERS_INFO("Command " << cmd << "\nexecution resulted with: " << meta["result"]);
+    TLOG_LOG() << "Command " << cmd << "\nexecution resulted with: " << meta["result"];
   }
 
 };

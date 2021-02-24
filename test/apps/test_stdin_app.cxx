@@ -8,6 +8,7 @@
  */
 #include "DummyCommandedObject.hpp"
 #include "cmdlib/CommandFacility.hpp"
+#include "logging/Logging.hpp"
 
 #include <string>
 #include <csignal>
@@ -22,7 +23,7 @@ std::atomic<bool> run_marker{true};
 
 // SIG handler
 static void sig_handler(int signal) {
-  ERS_INFO("Signal received: " << signal);
+  TLOG_LOG() << "Signal received: " << signal;
   global_signal = signal;
   run_marker.store(false);
 }

@@ -7,6 +7,7 @@
  */
 #include "cmdlib/CommandFacility.hpp"
 #include "cmdlib/Issues.hpp"
+#include "logging/Logging.hpp"
 
 #include <future>
 #include <functional>
@@ -36,7 +37,7 @@ CommandFacility::set_commanded(CommandedObject& commanded)
     m_active.store(true);
     m_executor = std::thread(&CommandFacility::executor, this);
   } else {
-    ers::error(CommandFacilityError(ERS_HERE, "set_commanded should be called once."));
+    ers::error(CommandFacilityInitialization(ERS_HERE, "set_commanded shall be called once."));
   }
 }
 
@@ -55,13 +56,13 @@ CommandFacility::handle_command(const cmdobj_t& cmd, cmdmeta_t meta)
     meta["result"] = "OK";
   } catch (const ers::Issue& ei ) {
     meta["result"] = ei.what();
-    ers::error(CommandedObjectExecutionError(ERS_HERE, "Caught ers::Issue", ei));
+    ers::error(CommandExecutionFailed(ERS_HERE, "Caught ers::Issue", ei));
   } catch (const std::exception& exc) {
     meta["result"] = exc.what();
-    ers::error(CommandedObjectExecutionError(ERS_HERE, "Caught std::exception", exc));
+    ers::error(CommandExecutionFailed(ERS_HERE, "Caught std::exception", exc));
   } catch (...) {  // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
     meta["result"] = "Caught unknown exception";
-    ers::error(CommandedObjectExecutionError(ERS_HERE, meta["result"]));
+    ers::error(CommandExecutionFailed(ERS_HERE, meta["result"]));
   }
   completion_callback(cmd, meta);
 }
@@ -76,7 +77,7 @@ CommandFacility::executor()
     } else {
       bool success = m_completion_queue.try_pop(fut);
       if (!success) {
-        ers::error(CommandFacilityError(ERS_HERE, "Can't get from completion queue.")); 
+        ers::error(CompletionQueueIssue(ERS_HERE, "Can't get from completion queue.")); 
       } else {
         fut.wait(); // trigger execution
       }  
