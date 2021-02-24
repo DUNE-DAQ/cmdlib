@@ -78,8 +78,8 @@ namespace dunedaq {
    ERS_DECLARE_ISSUE(cmdlib, CompletionQueueIssue,
                       "Problem with command completion queue: " << error,
                       ((std::string)error))
-RunLoopTerminated
-      ERS_DECLARE_ISSUE(cmdlib, RunLoopTerminated ,
+
+   ERS_DECLARE_ISSUE(cmdlib, RunLoopTerminated ,
                       "The main run loop for command reception was interrupted: " << error,
                       ((std::string)error))
 
