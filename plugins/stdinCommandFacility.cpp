@@ -106,7 +106,7 @@ protected:
 
   // Implementation of completion_handler interface
   void completion_callback(const cmdobj_t& cmd, cmdmeta_t& meta) {
-    TLOG() << "Command " << cmd << "\nexecution resulted with: " << meta["result"];
+    TLOG() << "Command " << cmd["id"] << " execution resulted with: " << meta["result"];
   }
 
 };
