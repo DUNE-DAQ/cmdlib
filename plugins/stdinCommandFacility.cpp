@@ -89,7 +89,7 @@ protected:
 
   // Implementation of completion_handler interface
   void completion_callback(const cmdobj_t& cmd, cmdmeta_t& meta) {
-    ERS_INFO("Command " << cmd << "\nexecution resulted with: " << meta["result"]);
+    ERS_INFO("Command " << cmd["id"] << " execution resulted with: " << meta["result"]);
   }
 
 };
