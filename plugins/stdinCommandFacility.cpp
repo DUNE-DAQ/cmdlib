@@ -20,9 +20,7 @@
 #include <string>
 #include <fstream>
 
-using namespace dunedaq::cmdlib;
-using namespace std::chrono_literals;
-using json = nlohmann::json;
+namespace dunedaq {
 
     // Throw if a file can not be opened.  Provide "mode" of "reading"
     // or "writing" and provide erroneous filename as args.
@@ -30,6 +28,13 @@ using json = nlohmann::json;
                      "Can not open file for " << mode << ": " << filename,
                       ((std::string)filename)
                       ((std::string)mode))
+
+}
+
+using namespace dunedaq::cmdlib;
+using namespace std::chrono_literals;
+using json = nlohmann::json;
+
     
 
 class stdinCommandFacility : public CommandFacility
@@ -46,7 +51,7 @@ public:
       fname = uri.substr(sep+3);
     }
 
-    TLOG_LOG() <<"Loading commands from file: " << fname;
+    TLOG() <<"Loading commands from file: " << fname;
    
     std::ifstream ifs;
     ifs.open(fname, std::fstream::in);
@@ -74,7 +79,7 @@ public:
     TLOG_DEBUG(1) << "Entered commands will be launched on CommandedObject...";
     std::string cmdid;
     while (end_marker) { //until runmarker
-      TLOG_LOG() << m_available_str;
+      TLOG() << m_available_str;
       // feed commands from cin
       std::cin >> cmdid;
       if (std::cin.eof()) {
@@ -83,9 +88,9 @@ public:
       if ( m_available_commands.find(cmdid) == m_available_commands.end() ) {
         std::ostringstream s;
 	s << "Command " << cmdid << " is not available...";
-        ers::error (CannotParseCommand(ERS_HERE, s.str());
+        ers::error (CannotParseCommand(ERS_HERE, s.str()));
       } else {
-        TLOG_LOG() << "Executing " << cmdid << " command...";
+        TLOG() << "Executing " << cmdid << " command...";
         inherited::execute_command(m_available_commands[cmdid], cmdmeta_t());
       }
     }
@@ -101,7 +106,7 @@ protected:
 
   // Implementation of completion_handler interface
   void completion_callback(const cmdobj_t& cmd, cmdmeta_t& meta) {
-    TLOG_LOG() << "Command " << cmd << "\nexecution resulted with: " << meta["result"];
+    TLOG() << "Command " << cmd << "\nexecution resulted with: " << meta["result"];
   }
 
 };

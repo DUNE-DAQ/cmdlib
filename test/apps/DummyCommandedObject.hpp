@@ -21,11 +21,11 @@ class DummyCommandedObject : public dunedaq::cmdlib::CommandedObject
 public:
   void execute(const dunedaq::cmdlib::cmdobj_t& command) {
     if (command.dump() == "{\"asd\":true}") {
-      TLOG_LOG() << command.dump() << " is a REALLY slow command";
+      TLOG() << command.dump() << " is a REALLY slow command";
       std::this_thread::sleep_for(std::chrono::seconds(5));
       throw std::runtime_error("Testing throw.");
     } else {
-      TLOG_LOG() << "I executed cmd: " << command.dump();
+      TLOG() << "I executed cmd: " << command.dump();
     }
   }
 };

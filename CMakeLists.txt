@@ -10,7 +10,7 @@ find_package(TBB REQUIRED)      # TBB should be capitalized here
 find_package(nlohmann_json REQUIRED)
 find_package(logging REQUIRED)
 
-set(CMDLIB_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ${TBB} ${TBB_IMPORTED_TARGETS} ers::ers nlohmann_json::nlohmann_json)
+set(CMDLIB_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ${TBB} ${TBB_IMPORTED_TARGETS} logging::logging ers::ers nlohmann_json::nlohmann_json)
 
 daq_codegen(*.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 

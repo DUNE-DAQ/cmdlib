@@ -56,7 +56,7 @@ protected:
   typedef CommandFacility inherited;
 
   void completion_callback(const cmdobj_t& cmd, cmdmeta_t& meta) {
-    TLOG_LOG() << "Command " << cmd << "\nexecution resulted with: " << meta["result"];
+    TLOG() << "Command " << cmd << "\nexecution resulted with: " << meta["result"];
   }
 
 };

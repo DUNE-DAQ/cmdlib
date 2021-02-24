@@ -23,7 +23,7 @@ std::atomic<bool> run_marker{true};
 
 // SIG handler
 static void sig_handler(int signal) {
-  TLOG_LOG() << "Signal received: " << signal;
+  TLOG() << "Signal received: " << signal;
   global_signal = signal;
   run_marker.store(false);
 }
