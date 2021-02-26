@@ -8,7 +8,8 @@
 #ifndef CMDLIB_INCLUDE_CMDLIB_ISSUES_HPP_ 
 #define CMDLIB_INCLUDE_CMDLIB_ISSUES_HPP_ 
 
-#include <ers/Issue.hpp>
+
+#include "ers/Issue.hpp"
 #include <string>
 
 namespace dunedaq {
