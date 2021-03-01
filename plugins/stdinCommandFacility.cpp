@@ -92,7 +92,7 @@ public:
         ers::error (CannotParseCommand(ERS_HERE, s.str()));
       } else {
         TLOG() << "Executing " << cmdid << " command...";
-        inherited::execute_command(m_available_commands[cmdid], cmdmeta_t());
+        inherited::execute_command(m_available_commands[cmdid], cmd::CommandReply());
       }
     }
     TLOG_DEBUG(1) << "Command handling stopped.";
@@ -106,11 +106,9 @@ protected:
   std::string m_available_str;
 
   // Implementation of completion_handler interface
-  void completion_callback(const cmdobj_t& cmd, cmdmeta_t& meta) {
+  void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta) {
     cmd::Command  command = cmd.get<cmd::Command>();
-    cmd::CommandReply reply = meta.get<cmd::CommandReply>();
-
-    TLOG() << "Command " << command.id << " execution resulted with: " << reply.success << " " << reply.result;
+    TLOG() << "Command " << command.id << " execution resulted with: " << meta.success << " " << meta.result;
   }
 
 };
