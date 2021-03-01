@@ -54,25 +54,22 @@ void
 CommandFacility::handle_command(const cmdobj_t& cmd, cmdmeta_t meta)
 {
   cmd::CommandReply reply;
+  cmd::from_json(meta, reply);
   try {
     m_commanded_object->execute(cmd);
     reply.success = true;
     reply.result = "OK";
-    //meta["result"] = "OK";
   } catch (const ers::Issue& ei ) {
     reply.success = false;
     reply.result = ei.what();
-    //meta["result"] = ei.what();
     ers::error(CommandExecutionFailed(ERS_HERE, "Caught ers::Issue", ei));
   } catch (const std::exception& exc) {
     reply.success = false;
     reply.result = exc.what();
-    //meta["result"] = exc.what();
     ers::error(CommandExecutionFailed(ERS_HERE, "Caught std::exception", exc));
   } catch (...) {  // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
     reply.success = false;
     reply.result = "Caught unknown exception";
-    //meta["result"] = "Caught unknown exception";
     ers::error(CommandExecutionFailed(ERS_HERE, reply.result));
   }
   cmd::to_json(meta, reply);
