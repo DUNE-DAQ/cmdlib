@@ -14,6 +14,8 @@
 #include <cetlib/BasicPluginFactory.h>
 #include <cetlib/compiler_macros.h>
 
+#include "cmdlib/cmd/Nljs.hpp"
+
 #include <tbb/concurrent_queue.h>
 
 #include <future>
@@ -66,16 +68,16 @@ public:
   virtual void run(std::atomic<bool>& end_marker) = 0;
 
   //! Feed commands from the implementation.
-  void execute_command(const cmdobj_t& cmd, cmdmeta_t meta);
+  void execute_command(const cmdobj_t& cmd, cmd::CommandReply meta);
 
 protected:
   //! Must be implemented to handling the results of the commands
-  virtual void completion_callback(const cmdobj_t& cmd, cmdmeta_t& meta) = 0; 
+  virtual void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta) = 0; 
 
 private:
 
   //! The glue between commanded and completion callback
-  void handle_command(const cmdobj_t& cmd, cmdmeta_t meta);
+  void handle_command(const cmdobj_t& cmd, cmd::CommandReply meta);
 
   void executor();
 
@@ -87,7 +89,7 @@ private:
   CompletionQueue m_completion_queue;
 
   //! Request callback function signature
-  typedef std::function<void(const cmdobj_t&, cmdmeta_t)> CommandCallback;
+  typedef std::function<void(const cmdobj_t&, cmd::CommandReply)> CommandCallback;
   CommandCallback m_command_callback = nullptr;
 
   //! Single thrad is responsible to trigger tasks 

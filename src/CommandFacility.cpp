@@ -9,8 +9,6 @@
 #include "cmdlib/Issues.hpp"
 #include "logging/Logging.hpp"
 
-#include "cmdlib/cmd/Nljs.hpp"
-
 #include <future>
 #include <functional>
 #include <utility>
@@ -44,35 +42,32 @@ CommandFacility::set_commanded(CommandedObject& commanded)
 }
 
 void 
-CommandFacility::execute_command(const cmdobj_t& cmd, cmdmeta_t meta)
+CommandFacility::execute_command(const cmdobj_t& cmd, cmd::CommandReply meta)
 {
   auto execfut = std::async(std::launch::deferred, m_command_callback, std::move(cmd), std::move(meta));
   m_completion_queue.push(std::move(execfut));
 }
 
 void
-CommandFacility::handle_command(const cmdobj_t& cmd, cmdmeta_t meta)
+CommandFacility::handle_command(const cmdobj_t& cmd, cmd::CommandReply meta)
 {
-  cmd::CommandReply reply;
-  cmd::from_json(meta, reply);
   try {
     m_commanded_object->execute(cmd);
-    reply.success = true;
-    reply.result = "OK";
+    meta.success = true;
+    meta.result = "OK";
   } catch (const ers::Issue& ei ) {
-    reply.success = false;
-    reply.result = ei.what();
+    meta.success = false;
+    meta.result = ei.what();
     ers::error(CommandExecutionFailed(ERS_HERE, "Caught ers::Issue", ei));
   } catch (const std::exception& exc) {
-    reply.success = false;
-    reply.result = exc.what();
+    meta.success = false;
+    meta.result = exc.what();
     ers::error(CommandExecutionFailed(ERS_HERE, "Caught std::exception", exc));
   } catch (...) {  // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
-    reply.success = false;
-    reply.result = "Caught unknown exception";
-    ers::error(CommandExecutionFailed(ERS_HERE, reply.result));
+    meta.success = false;
+    meta.result = "Caught unknown exception";
+    ers::error(CommandExecutionFailed(ERS_HERE, meta.result));
   }
-  cmd::to_json(meta, reply);
   completion_callback(cmd, meta);
 }
 

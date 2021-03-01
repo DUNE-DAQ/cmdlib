@@ -36,15 +36,15 @@ public:
       if (once) {
         // execute 10 quick commands
         for (auto i=0; i<1000; ++i) {
-          inherited::execute_command(democmd, cmdmeta_t());
+          inherited::execute_command(democmd, cmd::CommandReply());
         }
 
         // execute 1 slow command
-        inherited::execute_command(slowcmd, cmdmeta_t());
+        inherited::execute_command(slowcmd, cmd::CommandReply());
 
         // execute again 10 quick command   
         for (auto i=0; i<1000; ++i) {
-          inherited::execute_command(democmd, cmdmeta_t());
+          inherited::execute_command(democmd, cmd::CommandReply());
         }
         once = false;
       }
@@ -55,8 +55,8 @@ public:
 protected:
   typedef CommandFacility inherited;
 
-  void completion_callback(const cmdobj_t& cmd, cmdmeta_t& meta) {
-    TLOG() << "Command " << cmd << "\nexecution resulted with: " << meta["result"];
+  void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta) {
+    TLOG() << "Command " << cmd << "\nexecution resulted with: " << meta.result;
   }
 
 };
