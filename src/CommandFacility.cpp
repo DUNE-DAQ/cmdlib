@@ -29,9 +29,10 @@ CommandFacility::~CommandFacility()
 }
 
 void 
-CommandFacility::set_commanded(CommandedObject& commanded) 
+CommandFacility::set_commanded(CommandedObject& commanded, std::string name) 
 {
   if (m_commanded_object == nullptr) {
+    m_name = name;
     m_commanded_object = &commanded;
     m_command_callback = std::bind(&CommandFacility::handle_command, this, std::placeholders::_1, std::placeholders::_2);
     m_active.store(true);
@@ -55,17 +56,21 @@ CommandFacility::handle_command(const cmdobj_t& cmd, cmd::CommandReply meta)
     m_commanded_object->execute(cmd);
     meta.success = true;
     meta.result = "OK";
+    meta.appname = m_name;
   } catch (const ers::Issue& ei ) {
     meta.success = false;
     meta.result = ei.what();
+    meta.appname = m_name;
     ers::error(CommandExecutionFailed(ERS_HERE, "Caught ers::Issue", ei));
   } catch (const std::exception& exc) {
     meta.success = false;
     meta.result = exc.what();
+    meta.appname = m_name;
     ers::error(CommandExecutionFailed(ERS_HERE, "Caught std::exception", exc));
   } catch (...) {  // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
     meta.success = false;
     meta.result = "Caught unknown exception";
+    meta.appname = m_name;
     ers::error(CommandExecutionFailed(ERS_HERE, meta.result));
   }
   completion_callback(cmd, meta);

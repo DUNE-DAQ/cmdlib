@@ -22,8 +22,9 @@ local cs = {
     isok: s.boolean("IsOk", doc="Outcome of the command: OK=true, NotOK=false"),
      
     descr: s.string("Result",
-                    doc="The command name.  FIXME: this should be an enum!"),
- 
+                    doc="The command name."),
+    appid: s.string("AppId",
+                    doc="The aplication name."),
  
     command: s.record("Command", [
         s.field("id", self.cmdid,
@@ -35,6 +36,7 @@ local cs = {
     cmdreply: s.record("CommandReply", [
         s.field("success", self.isok, 1, doc="Outcome of the command: OK=true, NotOK=false"),
         s.field("result", self.descr, doc="Textual result of the command"),
+        s.field("appname", self.appid, doc="Application name"),
         s.field("data", self.data, optional=true,
                 doc="Command reply data object with type-specific structure"),
     ], doc="Top-level command reply object structure"),
