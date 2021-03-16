@@ -62,7 +62,7 @@ public:
     delete; ///< CommandFacility is not move-assignable
 
   //! Meant to be called once from main
-  void set_commanded(CommandedObject& commanded);
+  void set_commanded(CommandedObject& commanded, std::string name);
 
   //! Meant to be called once from main (implementation specific)
   virtual void run(std::atomic<bool>& end_marker) = 0;
@@ -83,6 +83,9 @@ private:
 
   //! Commanded Object to run execute with received commands as parameters
   mutable CommandedObject* m_commanded_object = nullptr;
+
+  //! name of the commanded object
+  std::string m_name;
 
   //! Completion queue for reqistered tasks
   typedef tbb::concurrent_queue<std::future<void>> CompletionQueue;

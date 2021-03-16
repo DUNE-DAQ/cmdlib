@@ -108,7 +108,7 @@ protected:
   // Implementation of completion_handler interface
   void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta) {
     cmd::Command  command = cmd.get<cmd::Command>();
-    TLOG() << "Command " << command.id << " execution resulted with: " << meta.success << " " << meta.result;
+    TLOG() << "Application " << meta.appname << " executed command " << command.id << " with result: " << meta.success << " " << meta.result;
   }
 
 };
