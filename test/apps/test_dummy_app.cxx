@@ -41,7 +41,7 @@ main(int /*argc*/, char** /*argv[]*/)
 
   // Setup facility
   DummyCommandedObject obj;
-  auto fac = makeCommandFacility(std::string("dummy://"));
+  auto fac = make_command_facility(std::string("dummy://"));
   fac->set_commanded(obj, "pippo");
   fac->run(run_marker);
   return 0;

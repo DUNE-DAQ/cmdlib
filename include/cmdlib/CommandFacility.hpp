@@ -103,7 +103,7 @@ private:
 };
 
 std::shared_ptr<CommandFacility>
-makeCommandFacility(std::string const& uri)
+make_command_facility(std::string const& uri)
 {
   auto sep = uri.find("://");
   std::string scheme;

@@ -39,7 +39,7 @@ main(int /*argc*/, char** /*argv[]*/)
 
   // Setup facility
   DummyCommandedObject obj;
-  auto fac = makeCommandFacility(std::string("stdin://my_minidaq_config.json")); // TODO parametrize command file
+  auto fac = make_command_facility(std::string("stdin://my_minidaq_config.json")); // TODO parametrize command file
   fac->set_commanded(obj, "pippo");
   fac->run(run_marker);
   return 0;
