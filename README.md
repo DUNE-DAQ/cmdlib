@@ -4,13 +4,13 @@ Details about commands and commanded object can be found under the [User's Guide
 ### Building and running examples:
 
 * create a software work area
-  * see https://github.com/DUNE-DAQ/appfwk/wiki/Compiling-and-running-under-v1.2.1
+  * see https://github.com/DUNE-DAQ/appfwk/wiki/Compiling-and-running-under-v2.2.0
 * those instructions should already help you to clone cmdlib to the right directory
-* build the software
-  * `. ./setup_build_environment`
-  * `./build_daq_software.sh --install`
+* build the software according to the instructions
+  * `dbt-setup-build-environment`
+  * `dbt-build.sh --clean --install`
 * you can run some examples in another shell
-  * `. ./setup_runtime_environment`
+  * `dbt-setup-runtime-environment`
   * `cmdlib_test_dummy_app`
   * `cmdlib_test_stdin_app`
 

@@ -14,6 +14,8 @@
 #include <cetlib/BasicPluginFactory.h>
 #include <cetlib/compiler_macros.h>
 
+#include "cmdlib/cmd/Nljs.hpp"
+
 #include <tbb/concurrent_queue.h>
 
 #include <future>
@@ -38,7 +40,7 @@
   {                                                                                                                    \
     return std::unique_ptr<dunedaq::cmdlib::CommandFacility>(new klass());                                             \
   }                                                                                                                    \
-  }
+  } 
 
 namespace dunedaq::cmdlib {
 
@@ -48,7 +50,7 @@ namespace dunedaq::cmdlib {
 class CommandFacility
 {
 public:
-  explicit CommandFacility(std::string /*uri*/) { executor_ = std::thread(); }
+  explicit CommandFacility(std::string /*uri*/) {}
   ~CommandFacility();
   CommandFacility(const CommandFacility&) = 
     delete; ///< CommandFacility is not copy-constructible
@@ -60,42 +62,48 @@ public:
     delete; ///< CommandFacility is not move-assignable
 
   //! Meant to be called once from main
-  void setCommanded(CommandedObject& commanded);
+  void set_commanded(CommandedObject& commanded, std::string name);
 
   //! Meant to be called once from main (implementation specific)
   virtual void run(std::atomic<bool>& end_marker) = 0;
 
   //! Feed commands from the implementation.
-  void executeCommand(const cmdobj_t& command);
+  void execute_command(const cmdobj_t& cmd, cmd::CommandReply meta);
 
 protected:
   //! Must be implemented to handling the results of the commands
-  virtual void completionCallback(const std::string& result) = 0; 
+  virtual void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta) = 0; 
 
 private:
-  //! Commaned Object to run execute with received commands as parameters
-  mutable CommandedObject* commanded_object_ = nullptr;
+
+  //! The glue between commanded and completion callback
+  void handle_command(const cmdobj_t& cmd, cmd::CommandReply meta);
+
+  void executor();
+
+  //! Commanded Object to run execute with received commands as parameters
+  mutable CommandedObject* m_commanded_object = nullptr;
+
+  //! name of the commanded object
+  std::string m_name;
 
   //! Completion queue for reqistered tasks
   typedef tbb::concurrent_queue<std::future<void>> CompletionQueue;
-  CompletionQueue completion_queue_;
+  CompletionQueue m_completion_queue;
 
   //! Request callback function signature
-  typedef std::function<void(const cmdobj_t&)> CommandCallback;
-  CommandCallback command_callback_ = nullptr;
-
-  //! The glue between commanded and completion callback
-  void handleCommand(const cmdobj_t& command);
+  typedef std::function<void(const cmdobj_t&, cmd::CommandReply)> CommandCallback;
+  CommandCallback m_command_callback = nullptr;
 
   //! Single thrad is responsible to trigger tasks 
-  std::atomic<bool> active_;
-  void executor();
-  std::thread executor_;
+  std::atomic<bool> m_active;
+
+  std::thread m_executor;
 
 };
 
 std::shared_ptr<CommandFacility>
-makeCommandFacility(std::string const& uri)
+make_command_facility(std::string const& uri)
 {
   auto sep = uri.find("://");
   std::string scheme;
@@ -113,7 +121,7 @@ makeCommandFacility(std::string const& uri)
     throw CommandFacilityCreationFailed(ERS_HERE, uri, cexpt);
   } catch (const ers::Issue &iexpt) {
     throw CommandFacilityCreationFailed(ERS_HERE, uri, iexpt);
-  } catch (...) {
+  } catch (...) {  // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
     throw CommandFacilityCreationFailed(ERS_HERE, uri, "Unknown error.");
   }
   return cf_ptr;

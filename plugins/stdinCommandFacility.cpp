@@ -8,20 +8,35 @@
  */
 #include "cmdlib/CommandFacility.hpp"
 #include "cmdlib/Issues.hpp"
+#include "cmdlib/cmd/Nljs.hpp"
 
-#include <ers/ers.h>
+#include <logging/Logging.hpp>
 #include <nlohmann/json.hpp>
 #include <cetlib/BasicPluginFactory.h>
 
 #include <thread>
 #include <chrono>
+#include <map>
 #include <memory>
 #include <string>
 #include <fstream>
 
+namespace dunedaq {
+
+    // Throw if a file can not be opened.  Provide "mode" of "reading"
+    // or "writing" and provide erroneous filename as args.
+    ERS_DECLARE_ISSUE(cmdlib, BadFile,
+                     "Can not open file for " << mode << ": " << filename,
+                      ((std::string)filename)
+                      ((std::string)mode))
+
+}
+
 using namespace dunedaq::cmdlib;
 using namespace std::chrono_literals;
 using json = nlohmann::json;
+
+    
 
 class stdinCommandFacility : public CommandFacility
 {
@@ -37,58 +52,63 @@ public:
       fname = uri.substr(sep+3);
     }
 
-    ERS_INFO("Loading commands from file: " << fname);
+    TLOG() <<"Loading commands from file: " << fname;
+   
+    std::ifstream ifs;
+    ifs.open(fname, std::fstream::in);
+    if (!ifs.is_open()) {
+      throw BadFile(ERS_HERE, fname, "reading");
+    } 
+
     try {
-      std::ifstream ifs;
-      ifs.open(fname, std::fstream::in);
-      if (!ifs.is_open()) {
-        throw dunedaq::cmdlib::CommandParserError(ERS_HERE, "Can't open command file!");
-      }
-      raw_commands_ = json::parse(ifs);
+      m_raw_commands = json::parse(ifs);
     } catch (const std::exception& ex) {
-      throw dunedaq::cmdlib::CommandParserError(ERS_HERE, ex.what());
+      throw CannotParseCommand(ERS_HERE, ex.what());
     }
     std::ostringstream avaostr;
     avaostr << "Available commands:";
-    for (auto it = raw_commands_.begin(); it != raw_commands_.end(); ++it) {
+    for (auto it = m_raw_commands.begin(); it != m_raw_commands.end(); ++it) {
       std::string idstr(it.value()["id"]);
-      available_commands_[idstr] = it.value();
+      m_available_commands[idstr] = it.value();
       avaostr << " | " << idstr;
     }
-    available_str_ = avaostr.str();
+    m_available_str = avaostr.str();
   }
 
   // Implementation of the runner
   void run(std::atomic<bool>& end_marker) {
-    ERS_INFO("Entered commands will be launched on CommandedObject...");
+    TLOG_DEBUG(1) << "Entered commands will be launched on CommandedObject...";
     std::string cmdid;
     while (end_marker) { //until runmarker
-      ERS_INFO(available_str_);
+      TLOG() << m_available_str;
       // feed commands from cin
       std::cin >> cmdid;
       if (std::cin.eof()) {
         break;
       }
-      if ( available_commands_.find(cmdid) == available_commands_.end() ) {
-        ERS_INFO("Command " << cmdid << " is not available...");
+      if ( m_available_commands.find(cmdid) == m_available_commands.end() ) {
+        std::ostringstream s;
+	s << "Command " << cmdid << " is not available...";
+        ers::error (CannotParseCommand(ERS_HERE, s.str()));
       } else {
-        ERS_INFO("Executing " << cmdid << " command...");
-        inherited::executeCommand(available_commands_[cmdid]);
+        TLOG() << "Executing " << cmdid << " command...";
+        inherited::execute_command(m_available_commands[cmdid], cmd::CommandReply());
       }
     }
-    ERS_INFO("Command handling stopped.");
+    TLOG_DEBUG(1) << "Command handling stopped.";
   }
 
 protected:
   typedef CommandFacility inherited;
 
-  json raw_commands_;
-  std::map<std::string, json> available_commands_;
-  std::string available_str_;
+  json m_raw_commands;
+  std::map<std::string, json> m_available_commands;
+  std::string m_available_str;
 
-  // Implementation of completionHandler interface
-  void completionCallback(const std::string& result) {
-    ERS_INFO("Command execution resulted with: " << result);
+  // Implementation of completion_handler interface
+  void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta) {
+    cmd::Command  command = cmd.get<cmd::Command>();
+    TLOG() << "Application " << meta.appname << " executed command " << command.id << " with result: " << meta.success << " " << meta.result;
   }
 
 };

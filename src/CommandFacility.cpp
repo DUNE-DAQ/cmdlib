@@ -7,6 +7,7 @@
  */
 #include "cmdlib/CommandFacility.hpp"
 #include "cmdlib/Issues.hpp"
+#include "logging/Logging.hpp"
 
 #include <future>
 #include <functional>
@@ -19,65 +20,73 @@ using namespace dunedaq::cmdlib;
 
 CommandFacility::~CommandFacility() 
 {
-  if (active_.load()) {
-    active_.store(false);
-    if(executor_.joinable()) {
-      executor_.join();
+  if (m_active.load()) {
+    m_active.store(false);
+    if(m_executor.joinable()) {
+      m_executor.join();
     } 
   }
 }
 
 void 
-CommandFacility::setCommanded(CommandedObject& commanded) 
+CommandFacility::set_commanded(CommandedObject& commanded, std::string name) 
 {
-  if (commanded_object_ == nullptr) {
-    commanded_object_ = &commanded;
-    command_callback_ = std::bind(&CommandFacility::handleCommand, this, std::placeholders::_1);
-    active_.store(true);
-    executor_ = std::thread(&CommandFacility::executor, this);
+  if (m_commanded_object == nullptr) {
+    m_name = name;
+    m_commanded_object = &commanded;
+    m_command_callback = std::bind(&CommandFacility::handle_command, this, std::placeholders::_1, std::placeholders::_2);
+    m_active.store(true);
+    m_executor = std::thread(&CommandFacility::executor, this);
   } else {
-    ers::error(CommandFacilityError(ERS_HERE, "setCommanded should be called once."));
+    ers::error(CommandFacilityInitialization(ERS_HERE, "set_commanded shall be called once."));
   }
 }
 
 void 
-CommandFacility::executeCommand(const cmdobj_t& command)
+CommandFacility::execute_command(const cmdobj_t& cmd, cmd::CommandReply meta)
 {
-  auto execfut = std::async(std::launch::deferred, command_callback_, std::move(command));
-  completion_queue_.push(std::move(execfut));
+  auto execfut = std::async(std::launch::deferred, m_command_callback, std::move(cmd), std::move(meta));
+  m_completion_queue.push(std::move(execfut));
 }
 
 void
-CommandFacility::handleCommand(const cmdobj_t& command) 
+CommandFacility::handle_command(const cmdobj_t& cmd, cmd::CommandReply meta)
 {
-  std::string ret = "";
   try {
-    commanded_object_->execute(command);
-    ret = "OK";
+    m_commanded_object->execute(cmd);
+    meta.success = true;
+    meta.result = "OK";
+    meta.appname = m_name;
   } catch (const ers::Issue& ei ) {
-    ret = ei.what();
-    ers::error(CommandedObjectExecutionError(ERS_HERE, "Caught ers::Issue", ei));
+    meta.success = false;
+    meta.result = ei.what();
+    meta.appname = m_name;
+    ers::error(CommandExecutionFailed(ERS_HERE, "Caught ers::Issue", ei));
   } catch (const std::exception& exc) {
-    ret = exc.what();
-    ers::error(CommandedObjectExecutionError(ERS_HERE, "Caught std::exception", exc));
-  } catch (...) {
-    ret = "Caught unknown exception";
-    ers::error(CommandedObjectExecutionError(ERS_HERE, ret));
+    meta.success = false;
+    meta.result = exc.what();
+    meta.appname = m_name;
+    ers::error(CommandExecutionFailed(ERS_HERE, "Caught std::exception", exc));
+  } catch (...) {  // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
+    meta.success = false;
+    meta.result = "Caught unknown exception";
+    meta.appname = m_name;
+    ers::error(CommandExecutionFailed(ERS_HERE, meta.result));
   }
-  completionCallback(ret);
+  completion_callback(cmd, meta);
 }
 
 void
 CommandFacility::executor()
 {
   std::future<void> fut; 
-  while (active_.load()) {
-    if (completion_queue_.empty()) {
+  while (m_active.load()) {
+    if (m_completion_queue.empty()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     } else {
-      bool success = completion_queue_.try_pop(fut);
+      bool success = m_completion_queue.try_pop(fut);
       if (!success) {
-        ers::error(CommandFacilityError(ERS_HERE, "Can't get from completion queue.")); 
+        ers::error(CompletionQueueIssue(ERS_HERE, "Can't get from completion queue.")); 
       } else {
         fut.wait(); // trigger execution
       }  

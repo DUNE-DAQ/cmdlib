@@ -8,7 +8,7 @@
  */
 #include "cmdlib/CommandFacility.hpp"
 
-#include <ers/ers.h>
+#include "logging/Logging.hpp"
 #include <nlohmann/json.hpp>
 #include <cetlib/BasicPluginFactory.h>
 
@@ -27,7 +27,7 @@ public:
   }
 
   void run(std::atomic<bool>& end_marker) {
-    ERS_INFO("Going for a run...");
+    TLOG_DEBUG(1) << "Going for a run...";
     auto democmd = nlohmann::json::parse("{\"happy\": true, \"pi\": 3.141 }");
     auto slowcmd = nlohmann::json::parse("{\"asd\": true}");
 
@@ -36,27 +36,27 @@ public:
       if (once) {
         // execute 10 quick commands
         for (auto i=0; i<1000; ++i) {
-          inherited::executeCommand(democmd);
+          inherited::execute_command(democmd, cmd::CommandReply());
         }
 
         // execute 1 slow command
-        inherited::executeCommand(slowcmd);
+        inherited::execute_command(slowcmd, cmd::CommandReply());
 
         // execute again 10 quick command   
         for (auto i=0; i<1000; ++i) {
-          inherited::executeCommand(democmd);
+          inherited::execute_command(democmd, cmd::CommandReply());
         }
         once = false;
       }
     }
-    ERS_INFO("Finished.");
+    TLOG_DEBUG(1) <<"Finished.";
   }
 
 protected:
   typedef CommandFacility inherited;
 
-  void completionCallback(const std::string& result) {
-    ERS_INFO("Dummy handler just prints out result of cmd: " << result);
+  void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta) {
+    TLOG() << "Command " << cmd << "\nexecution resulted with: " << meta.result;
   }
 
 };

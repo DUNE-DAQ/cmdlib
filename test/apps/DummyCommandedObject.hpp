@@ -6,12 +6,12 @@
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
-#ifndef CMDLIB_TEST_DUMMY_COMMANDED_OBJECT_HPP_
-#define CMDLIB_TEST_DUMMY_COMMANDED_OBJECT_HPP_
+#ifndef CMDLIB_TEST_APPS_DUMMYCOMMANDEDOBJECT_HPP_
+#define CMDLIB_TEST_APPS_DUMMYCOMMANDEDOBJECT_HPP_
 
 #include "cmdlib/CommandedObject.hpp"
 
-#include <ers/ers.h>
+#include <logging/Logging.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -21,13 +21,13 @@ class DummyCommandedObject : public dunedaq::cmdlib::CommandedObject
 public:
   void execute(const dunedaq::cmdlib::cmdobj_t& command) {
     if (command.dump() == "{\"asd\":true}") {
-      ERS_INFO(command.dump() << " is a REALLY slow command");
+      TLOG() << command.dump() << " is a REALLY slow command";
       std::this_thread::sleep_for(std::chrono::seconds(5));
       throw std::runtime_error("Testing throw.");
     } else {
-      ERS_INFO("I executed cmd: " << command.dump());
+      TLOG() << "I executed cmd: " << command.dump();
     }
   }
 };
 
-#endif // CMDLIB_TEST_DUMMY_COMMANDED_OBJECT_HPP_
+#endif // CMDLIB_TEST_APPS_DUMMYCOMMANDEDOBJECT_HPP_
