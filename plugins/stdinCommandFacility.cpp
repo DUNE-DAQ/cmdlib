@@ -30,7 +30,7 @@ namespace dunedaq {
                       ((std::string)filename)
                       ((std::string)mode))
 
-}
+} // namespace dunedaq
 
 using namespace dunedaq::cmdlib;
 using namespace std::chrono_literals;
