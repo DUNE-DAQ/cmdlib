@@ -1,5 +1,5 @@
 # cmdlib - Interfaces for commanded objects
-Details about commands and commanded object can be found under the [User's Guide](doc/UserGuide.md).
+Details about commands and commanded object can be found under the [User's Guide](User-Guide.md).
 
 ### Building and running examples:
 

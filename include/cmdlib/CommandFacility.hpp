@@ -8,13 +8,12 @@
 #ifndef CMDLIB_INCLUDE_CMDLIB_COMMANDFACILITY_HPP_
 #define CMDLIB_INCLUDE_CMDLIB_COMMANDFACILITY_HPP_
 
+#include "cmdlib/cmd/Nljs.hpp"
 #include "CommandedObject.hpp"
 #include "Issues.hpp"
 
 #include <cetlib/BasicPluginFactory.h>
 #include <cetlib/compiler_macros.h>
-
-#include "cmdlib/cmd/Nljs.hpp"
 
 #include <tbb/concurrent_queue.h>
 
