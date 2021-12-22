@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(cmdlib VERSION 1.1.4)
+project(cmdlib VERSION 1.1.5)
 
 find_package(daq-cmake REQUIRED)
 
@@ -9,6 +9,7 @@ find_package(cetlib REQUIRED)
 find_package(TBB REQUIRED)      # TBB should be capitalized here
 find_package(nlohmann_json REQUIRED)
 find_package(logging REQUIRED)
+find_package(ers REQUIRED)
 
 set(CMDLIB_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} ${TBB} ${TBB_IMPORTED_TARGETS} logging::logging ers::ers nlohmann_json::nlohmann_json)
 
