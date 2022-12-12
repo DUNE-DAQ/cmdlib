@@ -19,7 +19,8 @@
 class DummyCommandedObject : public dunedaq::cmdlib::CommandedObject
 {
 public:
-  void execute(const dunedaq::cmdlib::cmdobj_t& command) {
+  void execute(const dunedaq::cmdlib::cmdobj_t& command)
+  {
     if (command.dump() == "{\"asd\":true}") {
       TLOG() << command.dump() << " is a REALLY slow command";
       std::this_thread::sleep_for(std::chrono::seconds(5));
