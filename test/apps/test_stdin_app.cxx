@@ -1,5 +1,5 @@
 /**
- * @file test_stdin_app.cxx Test application for using 
+ * @file test_stdin_app.cxx Test application for using
  * the std::cin based CommandFacility implementation
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
@@ -10,8 +10,8 @@
 #include "cmdlib/CommandFacility.hpp"
 #include "logging/Logging.hpp"
 
-#include <string>
 #include <csignal>
+#include <string>
 
 using namespace dunedaq::cmdlib;
 
@@ -19,10 +19,12 @@ using namespace dunedaq::cmdlib;
 volatile int global_signal;
 
 // Run marker
-std::atomic<bool> run_marker{true};
+std::atomic<bool> run_marker{ true };
 
 // SIG handler
-static void sig_handler(int signal) {
+static void
+sig_handler(int signal)
+{
   TLOG() << "Signal received: " << signal;
   global_signal = signal;
   run_marker.store(false);
