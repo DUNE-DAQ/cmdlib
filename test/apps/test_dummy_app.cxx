@@ -11,9 +11,9 @@
 
 #include <logging/Logging.hpp>
 
+#include <string>
 #include <chrono>
 #include <csignal>
-#include <string>
 
 using namespace dunedaq::cmdlib;
 
@@ -21,13 +21,11 @@ using namespace dunedaq::cmdlib;
 volatile int global_signal;
 
 // Run marker
-std::atomic<bool> run_marker{ true };
+std::atomic<bool> run_marker{true};
 
 // SIG handler
-static void
-sig_handler(int signal)
-{
-  TLOG() << "Signal received: " << signal;
+static void sig_handler(int signal) {
+  TLOG() <<"Signal received: " << signal;
   global_signal = signal;
   run_marker.store(false);
 }

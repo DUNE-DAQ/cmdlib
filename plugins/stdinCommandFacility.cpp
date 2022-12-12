@@ -10,25 +10,25 @@
 #include "cmdlib/Issues.hpp"
 #include "cmdlib/cmd/Nljs.hpp"
 
-#include <cetlib/BasicPluginFactory.h>
 #include <logging/Logging.hpp>
 #include <nlohmann/json.hpp>
+#include <cetlib/BasicPluginFactory.h>
 
+#include <thread>
 #include <chrono>
-#include <fstream>
 #include <map>
 #include <memory>
 #include <string>
-#include <thread>
+#include <fstream>
 
 namespace dunedaq {
 
-// Throw if a file can not be opened.  Provide "mode" of "reading"
-// or "writing" and provide erroneous filename as args.
-ERS_DECLARE_ISSUE(cmdlib,
-                  BadFile,
-                  "Can not open file for " << mode << ": " << filename,
-                  ((std::string)filename)((std::string)mode))
+    // Throw if a file can not be opened.  Provide "mode" of "reading"
+    // or "writing" and provide erroneous filename as args.
+    ERS_DECLARE_ISSUE(cmdlib, BadFile,
+                     "Can not open file for " << mode << ": " << filename,
+                      ((std::string)filename)
+                      ((std::string)mode))
 
 } // namespace dunedaq
 
@@ -36,12 +36,12 @@ using namespace dunedaq::cmdlib;
 using namespace std::chrono_literals;
 using json = nlohmann::json;
 
+    
+
 class stdinCommandFacility : public CommandFacility
 {
 public:
-  explicit stdinCommandFacility(std::string uri)
-    : CommandFacility(uri)
-  {
+  explicit stdinCommandFacility(std::string uri) : CommandFacility(uri) { 
     // Allocate resources as needed
     auto col = uri.find_last_of(':');
     auto sep = uri.find("://");
@@ -49,16 +49,16 @@ public:
     if (col == std::string::npos || sep == std::string::npos) { // assume filename
       fname = uri;
     } else {
-      fname = uri.substr(sep + 3);
+      fname = uri.substr(sep+3);
     }
 
-    TLOG() << "Loading commands from file: " << fname;
-
+    TLOG() <<"Loading commands from file: " << fname;
+   
     std::ifstream ifs;
     ifs.open(fname, std::fstream::in);
     if (!ifs.is_open()) {
       throw BadFile(ERS_HERE, fname, "reading");
-    }
+    } 
 
     try {
       m_raw_commands = json::parse(ifs);
@@ -76,21 +76,20 @@ public:
   }
 
   // Implementation of the runner
-  void run(std::atomic<bool>& end_marker)
-  {
+  void run(std::atomic<bool>& end_marker) {
     TLOG_DEBUG(1) << "Entered commands will be launched on CommandedObject...";
     std::string cmdid;
-    while (end_marker) { // until runmarker
+    while (end_marker) { //until runmarker
       TLOG() << m_available_str;
       // feed commands from cin
       std::cin >> cmdid;
       if (std::cin.eof()) {
         break;
       }
-      if (m_available_commands.find(cmdid) == m_available_commands.end()) {
+      if ( m_available_commands.find(cmdid) == m_available_commands.end() ) {
         std::ostringstream s;
-        s << "Command " << cmdid << " is not available...";
-        ers::error(CannotParseCommand(ERS_HERE, s.str()));
+	s << "Command " << cmdid << " is not available...";
+        ers::error (CannotParseCommand(ERS_HERE, s.str()));
       } else {
         TLOG() << "Executing " << cmdid << " command...";
         inherited::execute_command(m_available_commands[cmdid], cmd::CommandReply());
@@ -107,18 +106,15 @@ protected:
   std::string m_available_str;
 
   // Implementation of completion_handler interface
-  void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta)
-  {
-    cmd::Command command = cmd.get<cmd::Command>();
-    TLOG() << "Application " << meta.appname << " executed command " << command.id << " with result: " << meta.success
-           << " " << meta.result;
+  void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta) {
+    cmd::Command  command = cmd.get<cmd::Command>();
+    TLOG() << "Application " << meta.appname << " executed command " << command.id << " with result: " << meta.success << " " << meta.result;
   }
+
 };
 
-extern "C"
-{
-  std::shared_ptr<dunedaq::cmdlib::CommandFacility> make(std::string uri)
-  {
-    return std::shared_ptr<dunedaq::cmdlib::CommandFacility>(new stdinCommandFacility(uri));
-  }
+extern "C" {
+    std::shared_ptr<dunedaq::cmdlib::CommandFacility> make(std::string uri) {
+        return std::shared_ptr<dunedaq::cmdlib::CommandFacility>(new stdinCommandFacility(uri));
+    }
 }
