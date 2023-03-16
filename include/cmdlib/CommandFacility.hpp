@@ -50,7 +50,7 @@ class CommandFacility
 {
 public:
   explicit CommandFacility(std::string /*uri*/) {}
-  ~CommandFacility();
+  virtual ~CommandFacility();
   CommandFacility(const CommandFacility&) = 
     delete; ///< CommandFacility is not copy-constructible
   CommandFacility& operator=(const CommandFacility&) =
