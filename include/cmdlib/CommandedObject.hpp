@@ -22,6 +22,9 @@ class CommandedObject
 public:
   //! Pure virtual execute member
   virtual void execute(const cmdobj_t& command) = 0; 
+
+  // virtual destructor
+  virtual ~CommandedObject() = default;
 };
 
 } // namespace dunedaq::cmdlib
