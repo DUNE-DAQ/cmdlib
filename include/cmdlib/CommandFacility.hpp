@@ -39,7 +39,7 @@
   {                                                                                                                    \
     return std::unique_ptr<dunedaq::cmdlib::CommandFacility>(new klass());                                             \
   }                                                                                                                    \
-  } 
+  }
 
 namespace dunedaq::cmdlib {
 
@@ -51,7 +51,7 @@ class CommandFacility
 public:
   explicit CommandFacility(std::string /*uri*/) {}
   virtual ~CommandFacility();
-  CommandFacility(const CommandFacility&) = 
+  CommandFacility(const CommandFacility&) =
     delete; ///< CommandFacility is not copy-constructible
   CommandFacility& operator=(const CommandFacility&) =
     delete; ///< CommandFacility is not copy-assignable
@@ -71,7 +71,10 @@ public:
 
 protected:
   //! Must be implemented to handling the results of the commands
-  virtual void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta) = 0; 
+  virtual void completion_callback(const cmdobj_t& cmd, cmd::CommandReply& meta) = 0;
+
+  //! name of the commanded object
+  std::string m_name;
 
 private:
 
@@ -83,8 +86,6 @@ private:
   //! Commanded Object to run execute with received commands as parameters
   mutable CommandedObject* m_commanded_object = nullptr;
 
-  //! name of the commanded object
-  std::string m_name;
 
   //! Completion queue for reqistered tasks
   typedef tbb::concurrent_queue<std::future<void>> CompletionQueue;
@@ -94,15 +95,17 @@ private:
   typedef std::function<void(const cmdobj_t&, cmd::CommandReply)> CommandCallback;
   CommandCallback m_command_callback = nullptr;
 
-  //! Single thrad is responsible to trigger tasks 
+  //! Single thrad is responsible to trigger tasks
   std::atomic<bool> m_active;
 
   std::thread m_executor;
 
 };
-
+template <typename... ARGS>
 std::shared_ptr<CommandFacility>
-make_command_facility(std::string const& uri)
+make_command_facility(
+  std::string const& uri,
+  ARGS&&... args)
 {
   auto sep = uri.find("://");
   std::string scheme;
@@ -115,7 +118,11 @@ make_command_facility(std::string const& uri)
   static cet::BasicPluginFactory bpf("duneCommandFacility", "make");
   std::shared_ptr<CommandFacility> cf_ptr;
   try {
-    cf_ptr = bpf.makePlugin<std::shared_ptr<CommandFacility>>(plugin_name, uri);
+    cf_ptr = bpf.makePlugin<std::shared_ptr<CommandFacility>>(
+      plugin_name,
+      uri,
+      std::forward<ARGS>(args)...
+    );
   } catch (const cet::exception &cexpt) {
     throw CommandFacilityCreationFailed(ERS_HERE, uri, cexpt);
   } catch (const ers::Issue &iexpt) {
