@@ -9,7 +9,7 @@
 #include "DummyCommandedObject.hpp"
 #include "cmdlib/CommandFacility.hpp"
 
-#include <logging/Logging.hpp>
+#include "logging/Logging.hpp"
 
 #include <string>
 #include <chrono>
