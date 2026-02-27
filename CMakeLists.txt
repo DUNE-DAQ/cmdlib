@@ -13,7 +13,7 @@ find_package(ers REQUIRED)
 
 set(CMDLIB_DEPENDENCIES ${CETLIB} ${CETLIB_EXCEPT} TBB::tbb logging::logging ers::ers nlohmann_json::nlohmann_json)
 
-daq_codegen(*.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
+#daq_codegen(*.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 
 ##############################################################################
 # Main library
