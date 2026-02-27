@@ -36,6 +36,11 @@ daq_add_application(cmdlib_test_stdin_app test_stdin_app.cxx TEST LINK_LIBRARIES
 ##############################################################################
 # No unit tests written
 
+if(BUILD_TESTING)
+	find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+	add_subdirectory(unittest)
+endif()
+
 ##############################################################################
 
 daq_install()
