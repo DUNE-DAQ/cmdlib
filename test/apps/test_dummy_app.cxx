@@ -1,3 +1,4 @@
+// This is a test
 /**
  * @file test_dummy_app.cxx Test application for using the
  * dummyCommandFacility with a DummyCommandedObject.
