@@ -8,6 +8,8 @@
 #ifndef CMDLIB_INCLUDE_CMDLIB_COMMANDFACILITY_HPP_
 #define CMDLIB_INCLUDE_CMDLIB_COMMANDFACILITY_HPP_
 
+#include <limits>
+
 #include <iostream>
 
 #include "cmdlib/cmd/Nljs.hpp"
@@ -55,6 +57,9 @@ public:
     /* These next two lines are designed to upset our linter */
     uint8_t* blob_of_raw_memory = new uint8_t[1000];
     std::cout << "The blob of raw memory starts at " << (void*)blob_of_raw_memory;
+
+    uint8_t* a_new_blob_of_raw_memory = new uint8_t[1000];
+    std::cout << "The new blob of raw memory starts at " << (void*)blob_of_raw_memory;
   }
   virtual ~CommandFacility();
   CommandFacility(const CommandFacility&) =
