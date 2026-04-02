@@ -1,3 +1,5 @@
+# This line you're reading is a commit for its own sake
+
 cmake_minimum_required(VERSION 3.12)
 project(cmdlib VERSION 1.3.0)
 
