@@ -9,32 +9,33 @@
 #include "cmdlib/Issues.hpp"
 #include "logging/Logging.hpp"
 
-#include <future>
-#include <functional>
-#include <utility>
 #include <atomic>
 #include <chrono>
+#include <functional>
+#include <future>
 #include <string>
+#include <utility>
 
 using namespace dunedaq::cmdlib;
 
-CommandFacility::~CommandFacility() 
+CommandFacility::~CommandFacility()
 {
   if (m_active.load()) {
     m_active.store(false);
-    if(m_executor.joinable()) {
+    if (m_executor.joinable()) {
       m_executor.join();
-    } 
+    }
   }
 }
 
-void 
-CommandFacility::set_commanded(CommandedObject& commanded, std::string name) 
+void
+CommandFacility::set_commanded(CommandedObject& commanded, std::string name)
 {
   if (m_commanded_object == nullptr) {
     m_name = name;
     m_commanded_object = &commanded;
-    m_command_callback = std::bind(&CommandFacility::handle_command, this, std::placeholders::_1, std::placeholders::_2);
+    m_command_callback =
+      std::bind(&CommandFacility::handle_command, this, std::placeholders::_1, std::placeholders::_2);
     m_active.store(true);
     m_executor = std::thread(&CommandFacility::executor, this);
   } else {
@@ -42,7 +43,7 @@ CommandFacility::set_commanded(CommandedObject& commanded, std::string name)
   }
 }
 
-void 
+void
 CommandFacility::execute_command(const cmdobj_t& cmd, cmd::CommandReply meta)
 {
   auto execfut = std::async(std::launch::deferred, m_command_callback, std::move(cmd), std::move(meta));
@@ -57,7 +58,7 @@ CommandFacility::handle_command(const cmdobj_t& cmd, cmd::CommandReply meta)
     meta.success = true;
     meta.result = "OK";
     meta.appname = m_name;
-  } catch (const ers::Issue& ei ) {
+  } catch (const ers::Issue& ei) {
     meta.success = false;
     meta.result = ei.what();
     meta.appname = m_name;
@@ -67,7 +68,7 @@ CommandFacility::handle_command(const cmdobj_t& cmd, cmd::CommandReply meta)
     meta.result = exc.what();
     meta.appname = m_name;
     ers::error(CommandExecutionFailed(ERS_HERE, "Caught std::exception", exc));
-  } catch (...) {  // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
+  } catch (...) { // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
     meta.success = false;
     meta.result = "Caught unknown exception";
     meta.appname = m_name;
@@ -79,17 +80,17 @@ CommandFacility::handle_command(const cmdobj_t& cmd, cmd::CommandReply meta)
 void
 CommandFacility::executor()
 {
-  std::future<void> fut; 
+  std::future<void> fut;
   while (m_active.load()) {
     if (m_completion_queue.empty()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     } else {
       bool success = m_completion_queue.try_pop(fut);
       if (!success) {
-        ers::error(CompletionQueueIssue(ERS_HERE, "Can't get from completion queue.")); 
+        ers::error(CompletionQueueIssue(ERS_HERE, "Can't get from completion queue."));
       } else {
         fut.wait(); // trigger execution
-      }  
+      }
     }
   }
 }
