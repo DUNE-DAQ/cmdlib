@@ -8,18 +8,18 @@
 #ifndef CMDLIB_INCLUDE_CMDLIB_COMMANDFACILITY_HPP_
 #define CMDLIB_INCLUDE_CMDLIB_COMMANDFACILITY_HPP_
 
-#include "cmdlib/cmd/Nljs.hpp"
 #include "CommandedObject.hpp"
 #include "Issues.hpp"
+#include "cmdlib/cmd/Nljs.hpp"
 
 #include <cetlib/BasicPluginFactory.h>
 #include <cetlib/compiler_macros.h>
 
 #include <tbb/concurrent_queue.h>
 
-#include <future>
-#include <functional>
 #include <atomic>
+#include <functional>
+#include <future>
 #include <memory>
 #include <string>
 
@@ -51,14 +51,10 @@ class CommandFacility
 public:
   explicit CommandFacility(std::string /*uri*/) {}
   virtual ~CommandFacility();
-  CommandFacility(const CommandFacility&) =
-    delete; ///< CommandFacility is not copy-constructible
-  CommandFacility& operator=(const CommandFacility&) =
-    delete; ///< CommandFacility is not copy-assignable
-  CommandFacility(CommandFacility&&) =
-    delete; ///< CommandFacility is not move-constructible
-  CommandFacility& operator=(CommandFacility&&) =
-    delete; ///< CommandFacility is not move-assignable
+  CommandFacility(const CommandFacility&) = delete;            ///< CommandFacility is not copy-constructible
+  CommandFacility& operator=(const CommandFacility&) = delete; ///< CommandFacility is not copy-assignable
+  CommandFacility(CommandFacility&&) = delete;                 ///< CommandFacility is not move-constructible
+  CommandFacility& operator=(CommandFacility&&) = delete;      ///< CommandFacility is not move-assignable
 
   //! Meant to be called once from main
   void set_commanded(CommandedObject& commanded, std::string name);
@@ -77,7 +73,6 @@ protected:
   std::string m_name;
 
 private:
-
   //! The glue between commanded and completion callback
   void handle_command(const cmdobj_t& cmd, cmd::CommandReply meta);
 
@@ -85,7 +80,6 @@ private:
 
   //! Commanded Object to run execute with received commands as parameters
   mutable CommandedObject* m_commanded_object = nullptr;
-
 
   //! Completion queue for reqistered tasks
   typedef tbb::concurrent_queue<std::future<void>> CompletionQueue;
@@ -99,35 +93,28 @@ private:
   std::atomic<bool> m_active;
 
   std::thread m_executor;
-
 };
-template <typename... ARGS>
+template<typename... ARGS>
 std::shared_ptr<CommandFacility>
-make_command_facility(
-  std::string const& uri,
-  ARGS&&... args)
+make_command_facility(std::string const& uri, ARGS&&... args)
 {
   auto sep = uri.find("://");
   std::string scheme;
   if (sep == std::string::npos) { // simple path
-      scheme = "stdin";
+    scheme = "stdin";
   } else { // with scheme
-      scheme = uri.substr(0, sep);
+    scheme = uri.substr(0, sep);
   }
   std::string plugin_name = scheme + "CommandFacility";
   static cet::BasicPluginFactory bpf("duneCommandFacility", "make");
   std::shared_ptr<CommandFacility> cf_ptr;
   try {
-    cf_ptr = bpf.makePlugin<std::shared_ptr<CommandFacility>>(
-      plugin_name,
-      uri,
-      std::forward<ARGS>(args)...
-    );
-  } catch (const cet::exception &cexpt) {
+    cf_ptr = bpf.makePlugin<std::shared_ptr<CommandFacility>>(plugin_name, uri, std::forward<ARGS>(args)...);
+  } catch (const cet::exception& cexpt) {
     throw CommandFacilityCreationFailed(ERS_HERE, uri, cexpt);
-  } catch (const ers::Issue &iexpt) {
+  } catch (const ers::Issue& iexpt) {
     throw CommandFacilityCreationFailed(ERS_HERE, uri, iexpt);
-  } catch (...) {  // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
+  } catch (...) { // NOLINT JCF Jan-27-2021 violates letter of the law but not the spirit
     throw CommandFacilityCreationFailed(ERS_HERE, uri, "Unknown error.");
   }
   return cf_ptr;
